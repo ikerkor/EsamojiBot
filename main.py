@@ -60,7 +60,7 @@ def main() -> None:
         updater.start_webhook(listen="0.0.0.0",
                               port=int(settings.PORT),
                               url_path=settings.TELEGRAM_TOKEN,
-                              webhook_url='https://esamojiak.herokuapp.com/' + settings.TELEGRAM_TOKEN)
+                              webhook_url='https://esamojibot.herokuapp.com/' + settings.TELEGRAM_TOKEN)
 
     # Block until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
