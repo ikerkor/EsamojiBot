@@ -57,7 +57,7 @@ def emoji(update: Update, context: CallbackContext) -> int:
                 for i, dic in enumerate(lstdicBatezbesteLuze):
                     lstBatezbesteLuze.append(dic["BatezbesteLuze"])
                 minBatezbesteLuze = min(lstBatezbesteLuze)
-                if minBatezbesteLuze <= 1 / 3456:  # <-- Aldatu!! 12 egunean behin gutxienez lekua gordetzeko
+                if minBatezbesteLuze <= 2 / 3456:  # <-- Aldatu!! 12 egunean bitan (edo sei egunean behin) gutxienez lekua gordetzeko
                     db[stEmoji].delete_one({"BatezbesteLuze": minBatezbesteLuze})
                     update.message.reply_text('Xarmanki')
                     time.sleep(1)
