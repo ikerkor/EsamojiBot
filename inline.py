@@ -1,3 +1,4 @@
+import settings
 import emoji as emo
 from settings import db, lstJoeraEmo, fernet
 from telegram import InlineQueryResultArticle, InputTextMessageContent, Update
