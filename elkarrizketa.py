@@ -18,6 +18,7 @@ dicSarrera = {}  # Sarrerak gordetzeko hiztegia (aldibereko erabiltzailea saiest
 def gehitu(update: Update, context: CallbackContext) -> int:
     """Elkarrizketa hasi eta esamoji berria sortzeko beharrezko datuak eskatuko dizkio"""
     update.message.reply_text('\U0001F9DE')
+    dicSarrera[update.message.chat.id] = {}
     time.sleep(0.5)
     update.message.reply_text(
         'Kaixo! Esamoji berri bat argitaratzen lagunduko dizut elkarrizketa bidez. Uneren batean prozesua eten nahi'
@@ -59,7 +60,6 @@ def emoji(update: Update, context: CallbackContext) -> int:
                 if minBatezbesteLuze <= 2 / 3456:  # <-- Aldatu!! 12 egunean bitan (edo sei egunean behin) gutxienez lekua gordetzeko
                     db[stEmoji].delete_one({"BatezbesteLuze": minBatezbesteLuze})
                     update.message.reply_text('Xarmanki')
-                    dicSarrera[update.message.chat.id] = {}
                     dicSarrera[update.message.chat.id]['Emoji'] = stEmoji
                     time.sleep(1)
                     update.message.reply_text('Esamoldea orain:')
@@ -70,14 +70,12 @@ def emoji(update: Update, context: CallbackContext) -> int:
                     return EMOJI
             else:
                 update.message.reply_text('Xarmanki')
-                dicSarrera[update.message.chat.id] = {}
                 dicSarrera[update.message.chat.id]['Emoji'] = stEmoji
                 time.sleep(1)
                 update.message.reply_text('Esamoldea orain:')
                 return ESAMOLDE
         else:
             update.message.reply_text('Xarmanki')
-            dicSarrera[update.message.chat.id] = {}
             dicSarrera[update.message.chat.id]['Emoji'] = stEmoji
             time.sleep(1)
             update.message.reply_text('Esamoldea orain:')
@@ -235,7 +233,7 @@ def erantzun(update: Update, context: CallbackContext) -> int:
     print(stOhar)
     context.bot.send_message(chat_id=settings.MY_TELEGRAM_USER, text='#feedback: ' + stOhar)
     update.message.reply_text("Mila esker. Kontuan hartuko dut (ala ez)")
-    return ConversationHandler.END
+    return conv_handler_oharra.END
 
 
 def utzi(update: Update, context: CallbackContext) -> int:
@@ -244,7 +242,7 @@ def utzi(update: Update, context: CallbackContext) -> int:
         'Aio! Hurrengora arte!'
     )
     del dicSarrera[update.message.chat.id]
-    return ConversationHandler.END
+    return conv_handler.END
 
 
 # EMOJI, ESAMOLDE, GOITIZEN, HERRI egoeradun elkarrizketa kudeatzailea sortu eta gehitu
