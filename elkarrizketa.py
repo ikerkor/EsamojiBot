@@ -9,8 +9,8 @@ from telegram.ext import CallbackContext, ConversationHandler, CommandHandler, M
 # Aldagai globalak
 EMOJI, ESAMOLDE, GOITIZEN, HERRI = range(4)  # Elkarrizketa-egoera-makinako egoerak
 DIAL, ERANTZUN= range(2)  # Oharretako elkarrizketa-egoera-makinako egoera.
-dicSarrera = {}  # Sarrera gordetzeko hiztegia
-stEmoji = ''
+dicSarrera = {}  # Sarrerak gordetzeko hiztegia (aldibereko erabiltzailea saiesteko, azpihiztegiak)
+
 
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -31,7 +31,6 @@ def gehitu(update: Update, context: CallbackContext) -> int:
 
 def emoji(update: Update, context: CallbackContext) -> int:
     """Emojia gorde eta esamoldea eskatu"""
-    global stEmoji
     stEmoji = update.message.text
     time.sleep(1)
     if not emo.is_emoji(stEmoji):  # Ez bada emoji bakar bat
@@ -60,6 +59,8 @@ def emoji(update: Update, context: CallbackContext) -> int:
                 if minBatezbesteLuze <= 2 / 3456:  # <-- Aldatu!! 12 egunean bitan (edo sei egunean behin) gutxienez lekua gordetzeko
                     db[stEmoji].delete_one({"BatezbesteLuze": minBatezbesteLuze})
                     update.message.reply_text('Xarmanki')
+                    dicSarrera[update.message.chat.id] = {}
+                    dicSarrera[update.message.chat.id]['Emoji'] = stEmoji
                     time.sleep(1)
                     update.message.reply_text('Esamoldea orain:')
                     return ESAMOLDE
@@ -69,11 +70,15 @@ def emoji(update: Update, context: CallbackContext) -> int:
                     return EMOJI
             else:
                 update.message.reply_text('Xarmanki')
+                dicSarrera[update.message.chat.id] = {}
+                dicSarrera[update.message.chat.id]['Emoji'] = stEmoji
                 time.sleep(1)
                 update.message.reply_text('Esamoldea orain:')
                 return ESAMOLDE
         else:
             update.message.reply_text('Xarmanki')
+            dicSarrera[update.message.chat.id] = {}
+            dicSarrera[update.message.chat.id]['Emoji'] = stEmoji
             time.sleep(1)
             update.message.reply_text('Esamoldea orain:')
             return ESAMOLDE
@@ -94,7 +99,7 @@ def esamolde(update: Update, context: CallbackContext) -> int:
         update.message.reply_text('Esamoldeak, asko jota, 40 karaktere izan behar ditu. Saiatu berriro ala /utzi')
         return ESAMOLDE
     else:
-        dicSarrera['Esamolde'] = stEsamolde
+        dicSarrera[update.message.chat.id]['Esamolde'] = stEsamolde
         time.sleep(1)
         update.message.reply_text(
             '\U0001F926\U0001F3FB\U0000200D\U00002642\U0000FE0F')  # U+1F3FC #'\U0001F926\U0000200D\U00002642\U0000FE0F'
@@ -119,10 +124,10 @@ def goitizen(update: Update, context: CallbackContext) -> int:
         update.message.reply_text('Saiatu berriro ala /utzi')
         return GOITIZEN
     else:
-        dicSarrera['Goitizen'] = stGoitizen
+        dicSarrera[update.message.chat.id]['Goitizen'] = stGoitizen
         stId = fernet.encrypt(bytes(str(update.message.from_user['id']), 'utf-8'))
-        dicSarrera['Sortzaile'] = stId
-        dicSarrera['AzkenErabiltzaile'] = stId
+        dicSarrera[update.message.chat.id]['Sortzaile'] = stId
+        dicSarrera[update.message.chat.id]['AzkenErabiltzaile'] = stId
         update.message.reply_text('Eta zure herria?')
         return HERRI
 
@@ -138,7 +143,23 @@ def herri(update: Update, context: CallbackContext) -> int:
         update.message.reply_text('Gehienez, 18 karaktere onartuko dira. Saiatu berriro ala /utzi')
         return HERRI
     else:
-        dicSarrera['Herri'] = stHerri
+        dicSarrera[update.message.chat.id]['Herri'] = stHerri
+        """Denbora gorde, ttantoak hasieratu eta sarrera berariazko zerrendei gehitu. Zerrenda sortu existitzen ez bada"""
+        if dicSarrera[update.message.chat.id][
+            'Emoji'] not in db.list_collection_names():  # Emoji horretara gehitzen den lehen aldian egin beharrekoa
+            dicSarrera[update.message.chat.id]['BatezbesteLuze'] = 1 / 3456  # 12 egunean behin
+        else:  # Jada daturik badago, BatezbesteLuze zerrendakoen batezbestekoa izango da.
+            dicSarrera[update.message.chat.id]['BatezbesteLuze'] = \
+                list(db[dicSarrera[update.message.chat.id]['Emoji']].aggregate(
+                    [{'$group': {'_id': None, 'batezbeste': {'$avg': '$BatezbesteLuze'}}}]))[0][
+                    'batezbeste']
+        dicSarrera[update.message.chat.id]['_id'] = str(datetime.datetime.now())
+        dicSarrera[update.message.chat.id]['Ttantto'] = 0
+        dicSarrera[update.message.chat.id]['TtanttoTarte'] = 0
+        dicSarrera[update.message.chat.id]['BatezbesteMotz'] = 0
+        print(dicSarrera[update.message.chat.id])
+        db[dicSarrera[update.message.chat.id]['Emoji']].insert_one(dicSarrera.pop(update.message.chat.id))  # DBan sartu eta gero dicSarrerako erabiltzaileari dagokion gakoa borratu egingo da
+
         update.message.reply_text('\U0001F3CC\U0000FE0F\U0000200D\U00002640\U0000FE0F')
         time.sleep(3.5)
         update.message.reply_text('-------------\U0001F386'.rjust(5))
@@ -165,27 +186,9 @@ def herri(update: Update, context: CallbackContext) -> int:
         update.message.reply_text('\U0001F4A5')
         time.sleep(0.3)
         update.message.reply_text('\U0001F4A5')
-        update.message.reply_text('Mila esker zure sarrerarengatik! Minutu batzuen buruan izango da erabilgarri')
-        zerrenda()
+        update.message.reply_text('Mila esker zure sarrerarengatik! Berehala izango da erabilgarri')
+
         return ConversationHandler.END
-
-
-def zerrenda():
-    """Denbora gorde, ttantoak hasieratu eta sarrera berariazko zerrendei gehitu. Zerrenda sortu existitzen ez bada"""
-    if stEmoji not in db.list_collection_names():  # Emoji horretara gehitzen den lehen aldian egin beharrekoa
-        dicSarrera['BatezbesteLuze'] = 1 / 3456  # 12 egunean behin
-    else:  # Jada daturik badago, BatezbesteLuze zerrendakoen batezbestekoa izango da.
-        dicSarrera['BatezbesteLuze'] = \
-            list(db[stEmoji].aggregate([{'$group': {'_id': None, 'batezbeste': {'$avg': '$BatezbesteLuze'}}}]))[0][
-                'batezbeste']
-    dicSarrera['_id'] = str(datetime.datetime.now())
-    dicSarrera['Ttantto'] = 0
-    dicSarrera['TtanttoTarte'] = 0
-    dicSarrera['BatezbesteMotz'] = 0
-    dicSarrera['Emoji'] = stEmoji
-    print(dicSarrera)
-    print(fernet.decrypt(dicSarrera['Sortzaile']))
-    db[stEmoji].insert_one(dicSarrera)
 
 
 def oharra(update: Update, context: CallbackContext) -> int:
@@ -240,6 +243,7 @@ def utzi(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'Aio! Hurrengora arte!'
     )
+    del dicSarrera[update.message.chat.id]
     return ConversationHandler.END
 
 
