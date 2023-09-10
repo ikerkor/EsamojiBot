@@ -12,7 +12,6 @@ DIAL, ERANTZUN= range(2)  # Oharretako elkarrizketa-egoera-makinako egoera.
 dicSarrera = {}  # Sarrerak gordetzeko hiztegia (aldibereko erabiltzailea saiesteko, azpihiztegiak)
 
 
-
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def gehitu(update: Update, context: CallbackContext) -> int:

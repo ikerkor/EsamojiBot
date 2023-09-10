@@ -7,18 +7,24 @@ from cryptography.fernet import Fernet
 # Ingurune-aldagaiak zamatu, .env fitxategirik badago
 load_dotenv()
 
-# Herokun edo lokalean ari garen jakiteko
-
-HEROKU = os.environ.get('HEROKU')
+#### Beharrezko ingurune aldagaiak
 
 # Telegram bot TOKEN and my user
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 MY_TELEGRAM_USER = os.environ.get('MY_TELEGRAM_USER')
 
-# Set the port number to listen in for the webhook
-PORT = int(os.environ.get('PORT', 8443))
+##### Webhook bidez egin nahi bada bete beharrezko ingurune aldagaiak
 
-# Enable loggingencrypted
+# Webhook bidez edo polling bidez ari garen jakiteko (bool, berez 0)
+WEBHOOK = os.environ.get("WEBHOOK")
+
+# Webhook url helbidea
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://adibidea.com/") # "https://zeplanbot.herokuapp.com/" Adibidea baino ez
+
+# Set the port number to listen in for the webhook
+PORT = int(os.environ.get('PORT', 8443))  # B4A-eko deploymentean ez da erabiltzen.
+
+# Enable logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )

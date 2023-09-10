@@ -53,14 +53,19 @@ def main() -> None:
     # Lerro barneko queryaren emaitzaren kudeatzailea gehitu
     dispatcher.add_handler(ChosenInlineResultHandler(inline.chosen))
 
-    # Hasi bot-a
-    if settings.HEROKU == '0':
+    # Hasi bot-a polling ala webhook bidez
+    if settings.WEBHOOK == "0":
+        settings.logger.info("Polling bidez exekutatuta")
         updater.start_polling()
-    elif settings.HEROKU == '1':
+    elif settings.WEBHOOK == "1":
+        settings.logger.info("Webhook bidez exekutatuta")
+        settings.logger.info("PORT: " + str(settings.PORT))
+        settings.logger.info("TELEGRAM USER: " + str(settings.MY_TELEGRAM_USER))
+        settings.logger.info("WEBHOOK_URL: " + str(settings.WEBHOOK_URL))
         updater.start_webhook(listen="0.0.0.0",
                               port=int(settings.PORT),
                               url_path=settings.TELEGRAM_TOKEN,
-                              webhook_url='https://esamojibot.herokuapp.com/' + settings.TELEGRAM_TOKEN)
+                              webhook_url=settings.WEBHOOK_URL + settings.TELEGRAM_TOKEN)
 
     # Block until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
