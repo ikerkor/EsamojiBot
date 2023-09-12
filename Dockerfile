@@ -5,6 +5,8 @@ FROM ubuntu:22.04
 WORKDIR /app
 # This command would copy EVERY FILE from your project folder into your container, so be careful.
 COPY . .
+# Install pip
+RUN apt install pip
 # Installing needed packages and dependencies.**
 RUN pip install -r requirements.txt
 # This command basically executes your main file with Python.
