@@ -22,7 +22,7 @@ WEBHOOK = os.environ.get("WEBHOOK")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://adibidea.com/") # "https://zeplanbot.herokuapp.com/" Adibidea baino ez
 
 # Set the port number to listen in for the webhook
-PORT = int(os.environ.get('PORT', 8443))  # B4A-eko deploymentean ez da erabiltzen.
+PORT = int(os.environ.get('PORT', 8443))  
 
 # Enable logging
 logging.basicConfig(
