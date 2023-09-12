@@ -1,5 +1,5 @@
 # Choosing an image for you container.
-FROM python:3.11-slim-bookworm
+FROM python:3.10.13-slim-bookworm
 
 # Setting your working directory
 WORKDIR /app
